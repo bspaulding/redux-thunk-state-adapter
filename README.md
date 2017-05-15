@@ -12,9 +12,9 @@ import { externalThunkCreator } from 'some-module';
 
 // provide a transform function to map InternalState -> ExternalState
 const externalThunkAdapter = createThunkAdapter((state) => ({
-	user: {
-		timezone: state.environment.userTimezone
-	}
+  user: {
+    timezone: state.environment.userTimezone
+  }
 }));
 
 const adaptedExternalThunk = externalThunkAdapter(externalThunkCreator);
