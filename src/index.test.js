@@ -21,7 +21,7 @@ it('provides the transformed state as the result of getState to the thunk', func
 		}
 	};
 
-	const externalThunkAdapter = createThunkAdapter((state) => ({
+	const externalThunkAdapter = createThunkAdapter(state => ({
 		user: {
 			timezone: state.environment.userTimezone
 		}
@@ -45,5 +45,50 @@ it('provides the transformed state as the result of getState to the thunk', func
 			y: 10,
 			z: 'z'
 		}
+	});
+});
+
+it('passes wrapped getState to any thunks dispatched', function() {
+	function externalSelector(state) {
+		return state.user.timezone;
+	}
+
+	function externalThunkTwo(x, y, z) {
+		return function (dispatch, getState) {
+			const timezone = externalSelector(getState());
+			dispatch({ type: 'EXTERNAL_ACTION', timezone, x, y, z });
+		};
+	}
+
+	function externalThunkOne(x, y, z) {
+		return function (dispatch, getState) {
+			dispatch(externalThunkTwo(x, y, z));
+		};
+	}
+
+	const externalThunkAdapter = createThunkAdapter(state => ({
+		user: {
+			timezone: state.environment.userTimezone
+		}
+	}));
+	const adaptedExternalThunk = externalThunkAdapter(externalThunkOne);
+	const internalState = {
+		environment: {
+			userTimezone: 'America/Chicago'
+		}
+	};
+	const x = 'x';
+	const y = 'y';
+	const z = 'z';
+	const dispatch = jest.fn();
+	const getState = jest.fn().mockReturnValue(internalState);
+	adaptedExternalThunk(x, y, z)(dispatch, getState);
+	expect(dispatch.mock.calls).toHaveLength(1);
+	expect(dispatch.mock.calls[0][0]).toEqual({
+		type: 'EXTERNAL_ACTION',
+		timezone: 'America/Chicago',
+		x,
+		y,
+		z
 	});
 });
