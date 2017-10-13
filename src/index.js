@@ -12,7 +12,7 @@ export function createThunkAdapter(transformState) {
 						dispatch(action);
 					}
 				};
-				thunk(dispatch$, getState$);
+				return thunk(dispatch$, getState$);
 			};
 		};
 	};
